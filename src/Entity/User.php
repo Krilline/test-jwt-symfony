@@ -13,7 +13,16 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
  *     normalizationContext={"groups"={"user:read"}},
- *     denormalizationContext={"groups"={"user:write"}}
+ *     denormalizationContext={"groups"={"user:write"}},
+ *     collectionOperations={
+ *          "get" = { "security" = "is_granted('USER_READ', object)" },
+ *          "post" = { "security_post_denormalize" = "is_granted('USER_CREATE', object)" }
+ *     },
+ *     itemOperations={
+ *          "get" = { "security" = "is_granted('USER_READ', object)" },
+ *          "put" = { "security" = "is_granted('USER_EDIT', object)" },
+ *          "delete" = { "security" = "is_granted('USER_DELETE', object)" }
+ *     },
  * ))
  */
 class User implements UserInterface
@@ -44,8 +53,6 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
-     *
-     * @Groups({"user:read"})
      */
     private $password;
 
