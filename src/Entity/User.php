@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,14 +18,20 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  *     denormalizationContext={"groups"={"user:write"}},
  *     collectionOperations={
  *          "get" = { "security" = "is_granted('USER_READ', object)" },
- *          "post" = { "security_post_denormalize" = "is_granted('USER_CREATE', object)" }
+ *          "post" = {
+ *     "security_post_denormalize" = "is_granted('USER_CREATE', object)",
+ *     "controller" = App\Controller\Api\User\UserCreateEditController::class
+ *     }
  *     },
  *     itemOperations={
  *          "get" = { "security" = "is_granted('USER_READ', object)" },
- *          "put" = { "security" = "is_granted('USER_EDIT', object)" },
+ *          "put" = {
+ *     "security" = "is_granted('USER_EDIT', object)",
+ *     "controller" = App\Controller\Api\User\UserCreateEditController::class
+ *     },
  *          "delete" = { "security" = "is_granted('USER_DELETE', object)" }
  *     },
- * ))
+ * )
  */
 class User implements UserInterface
 {
@@ -76,6 +84,18 @@ class User implements UserInterface
      * @SerializedName("password")
      */
     private $plainPassword;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Article::class, mappedBy="author", orphanRemoval=true)
+     *
+     * @Groups({"user:read"})
+     */
+    private $articles;
+
+    public function __construct()
+    {
+        $this->articles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -181,6 +201,37 @@ class User implements UserInterface
     public function setPlainPassword(string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Article[]
+     */
+    public function getArticles(): Collection
+    {
+        return $this->articles;
+    }
+
+    public function addArticle(Article $article): self
+    {
+        if (!$this->articles->contains($article)) {
+            $this->articles[] = $article;
+            $article->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Article $article): self
+    {
+        if ($this->articles->contains($article)) {
+            $this->articles->removeElement($article);
+            // set the owning side to null (unless already changed)
+            if ($article->getAuthor() === $this) {
+                $article->setAuthor(null);
+            }
+        }
 
         return $this;
     }

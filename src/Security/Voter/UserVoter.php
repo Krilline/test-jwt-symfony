@@ -38,12 +38,22 @@ class UserVoter extends Voter
                 break;
             case 'USER_READ':
                 if( $this->security->isGranted("IS_AUTHENTICATED_FULLY") &&
-                    $this->security->isGranted("ROLE_USER")
+                    $this->security->isGranted("ROLE_USER") ||
+                    $this->security->isGranted("ROLE_ADMIN")
                 ) {
                     return true;
                 }
                 break;
             case 'USER_DELETE':
+                if( $this->security->isGranted("IS_AUTHENTICATED_FULLY") &&
+                    $this->security->isGranted("ROLE_ADMIN") ||
+                    $this->security->isGranted("IS_AUTHENTICATED_FULLY") &&
+                    $this->security->isGranted("ROLE_USER") &&
+                    $user === $subject
+                ) {
+                    return true;
+                }
+                break;
             case 'USER_EDIT':
                 if( $this->security->isGranted("IS_AUTHENTICATED_FULLY") &&
                     $this->security->isGranted("ROLE_USER") &&
