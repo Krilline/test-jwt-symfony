@@ -13,36 +13,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ApiResource(
- *     normalizationContext={"groups"={"user:read"}},
- *     denormalizationContext={"groups"={"user:write"}},
- *     collectionOperations={
- *          "get" = { "security" = "is_granted('USER_READ', object)" },
- *          "post" = {
- *     "security_post_denormalize" = "is_granted('USER_CREATE', object)",
- *     "controller" = App\Controller\Api\User\UserCreateEditController::class
- *     }
- *     },
- *     itemOperations={
- *          "get" = { "security" = "is_granted('USER_READ', object)" },
- *          "put" = {
- *     "security" = "is_granted('USER_EDIT', object)",
- *     "controller" = App\Controller\Api\User\UserCreateEditController::class
- *     },
- *          "delete" = { "security" = "is_granted('USER_DELETE', object)" }
- *     },
- * )
+ * @ApiResource()
  */
 class User implements UserInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     *
-     * @Groups({"user:read"})
-     */
-    private $id;
+    use RessourceId;
+    use TimeStapable;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
@@ -95,11 +71,7 @@ class User implements UserInterface
     public function __construct()
     {
         $this->articles = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
+        $this->createdAt = New \DateTime();
     }
 
     /**
