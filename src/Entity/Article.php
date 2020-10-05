@@ -8,34 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @ApiResource(
- *     normalizationContext={"groups"={"article:read"}},
- *     denormalizationContext={"groups"={"article:write"}},
- *     collectionOperations={
- *          "get" = { "security" = "is_granted('ARTICLE_READ', object)" },
- *          "post" = {
- *     "security_post_denormalize" = "is_granted('ARTICLE_CREATE', object)",
- *     "controller" = App\Controller\Api\Article\ArticleCreateController::class
- *     }
- *     },
- *     itemOperations={
-            "get" = { "security" = "is_granted('ARTICLE_READ', object)" },
- *          "put" = { "security" = "is_granted('ARTICLE_EDIT', object)" },
- *          "delete" = { "security" = "is_granted('ARTICLE_DELETE', object)" },
- *     }
- * )
+ * @ApiResource()
  * @ORM\Entity(repositoryClass=ArticleRepository::class)
  */
 class Article
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     *
-     * @Groups({"article:read"})
-     */
-    private $id;
+
+    use RessourceId;
+    use TimeStapable;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -52,13 +32,6 @@ class Article
     private $content;
 
     /**
-     * @ORM\Column(type="datetime")
-     *
-     * @Groups({"article:read"})
-     */
-    private $created_at;
-
-    /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="articles")
      * @ORM\JoinColumn(nullable=false)
      *
@@ -68,12 +41,7 @@ class Article
 
     public function __construct()
     {
-        $this->created_at = New \DateTime();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
+        $this->createdAt = New \DateTime();
     }
 
     public function getTitle(): ?string
@@ -96,18 +64,6 @@ class Article
     public function setContent(string $content): self
     {
         $this->content = $content;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $created_at): self
-    {
-        $this->created_at = $created_at;
 
         return $this;
     }
